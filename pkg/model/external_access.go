@@ -41,31 +41,24 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	// SSH is open to AdminCIDR set
-	if b.Cluster.Spec.Topology.Masters == kops.TopologyPublic {
-		for _, sshAccess := range b.Cluster.Spec.SSHAccess {
-			c.AddTask(&awstasks.SecurityGroupRule{
-				Name:          s("ssh-external-to-master-" + sshAccess),
-				SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
-				Protocol:      s("tcp"),
-				FromPort:      i64(22),
-				ToPort:        i64(22),
-				CIDR:          s(sshAccess),
-			})
-		}
-	}
+	for _, sshAccess := range b.Cluster.Spec.SSHAccess {
+		c.AddTask(&awstasks.SecurityGroupRule{
+			Name:          s("ssh-external-to-master-" + sshAccess),
+			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
+			Protocol:      s("tcp"),
+			FromPort:      i64(22),
+			ToPort:        i64(22),
+			CIDR:          s(sshAccess),
+		})
 
-	// SSH is open to AdminCIDR set
-	if b.Cluster.Spec.Topology.Nodes == kops.TopologyPublic {
-		for _, sshAccess := range b.Cluster.Spec.SSHAccess {
-			c.AddTask(&awstasks.SecurityGroupRule{
-				Name:          s("ssh-external-to-node-" + sshAccess),
-				SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
-				Protocol:      s("tcp"),
-				FromPort:      i64(22),
-				ToPort:        i64(22),
-				CIDR:          s(sshAccess),
-			})
-		}
+		c.AddTask(&awstasks.SecurityGroupRule{
+			Name:          s("ssh-external-to-node-" + sshAccess),
+			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
+			Protocol:      s("tcp"),
+			FromPort:      i64(22),
+			ToPort:        i64(22),
+			CIDR:          s(sshAccess),
+		})
 	}
 
 	if !b.UseLoadBalancerForAPI() {
